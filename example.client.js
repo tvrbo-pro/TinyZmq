@@ -1,4 +1,4 @@
-const client = require('tiny-zmq').client;
+const client = require('.').client;
 
 const sendRequest = client.connect('tcp://localhost:5559');
 

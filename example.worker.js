@@ -1,4 +1,4 @@
-const worker = require('tiny-zmq').worker;
+const worker = require('.').worker;
 
 worker.connect('tcp://localhost:5560', function(parameters, doneCallback){
 	console.log("THE WORKER GOT", parameters);

@@ -3,7 +3,7 @@ const uuid = require('uuid');
 const config = require('./config.js');
 const procSignals = ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGTERM'/*, 'SIGUSR2'*/];
 
-const PING_INTERVAL = Math.floor(config.PING_BASE_INTERVAL * config.MATCHER_INSTANCES / config.API_INSTANCES) - 10;
+const PING_INTERVAL = Math.floor(config.PING_BASE_INTERVAL * config.WORKER_INSTANCES / config.CLIENT_INSTANCES) - 10;
 
 // STATE
 
@@ -159,7 +159,7 @@ function connect(uri){
 	}
 
 	// READY
-	requester.connect(config.MATCHER_CLIENT_URI);
+	requester.connect(brokerURI);
 
 	// return the method to call us to the client
 	return sendRequest;
@@ -199,7 +199,7 @@ function reconnect(){
 		}
 
 		// READY
-		requester.connect(config.MATCHER_CLIENT_URI);
+		requester.connect(brokerURI);
 	}, 50);
 }
 
@@ -209,8 +209,8 @@ function onTerminate(code){
 	terminating = true;
 	if(requester) {
 		try {
-			// requester.disconnect(config.MATCHER_CLIENT_URI);
-			requester.close(config.MATCHER_CLIENT_URI);
+			// requester.disconnect(brokerURI);
+			requester.close(brokerURI);
 		}
 		catch(e){ ; }
 	}

@@ -1,4 +1,4 @@
-const broker = require('tiny-zmq').broker;
+const broker = require('.').broker;
 	
 broker.bind({
 	clientsPort: 5559,
