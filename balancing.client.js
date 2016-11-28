@@ -10,6 +10,7 @@ const PING_INTERVAL = Math.floor(config.PING_BASE_INTERVAL * config.MATCHER_INST
 var requester;
 var brokerURI;
 var initialized = false;
+var terminating = false;
 var lastActivity = Date.now();
 var matcherCallbacks = [];
 
@@ -27,12 +28,14 @@ function init() {
 }
 
 function pingMatchers(){
-	if(!requester) return;
+	if(terminating) return;
+	else if(!requester) return;
 	requester.send('ping');
 }
 
 function checkHealth() {
-	if(!requester) return lastActivity = Date.now();
+	if(terminating) return;
+	else if(!requester) return lastActivity = Date.now();
 	else if((Date.now() - lastActivity) >= config.INACTIVITY_TIMEOUT){
 		// Reset clock
 		lastActivity = Date.now();
@@ -108,6 +111,8 @@ function gotResponse(responseBuffer) {
 // Lifecycle
 
 function connect(uri){
+	if(terminating) return;
+
 	if(!initialized) {
 		if(!uri || typeof uri != "string" || !uri.length)
 			throw new Error('[TinyZMQ] ERROR: expected the broker URI to connect the client to');
@@ -161,21 +166,55 @@ function connect(uri){
 }
 
 function reconnect(){
+	if(terminating) return;
+
 	console.error("[TinyZMQ] Trying to reconnect...");
 	requester.close();
 
-	setTimeout(connect, 50);
+	setTimeout(function(){
+		// CONNECT TO THE BROKER
+		requester = zmq.socket('req');
+		requester.on('message', gotResponse);
+
+		if(config.DEBUG) {
+			// Register to monitoring events
+			requester.on('connect', function(fd, ep) {console.log('[TinyZMQ] Connect');});
+			requester.on('connect_delay', function(fd, ep) {console.log('[TinyZMQ] Connect delay');});
+			requester.on('connect_retry', function(fd, ep) {console.log('[TinyZMQ] Connect retry');});
+			requester.on('listen', function(fd, ep) {console.log('[TinyZMQ] Listen');});
+			requester.on('bind_error', function(fd, ep) {console.log('[TinyZMQ] Bind error');});
+			requester.on('accept', function(fd, ep) {console.log('[TinyZMQ] Accept');});
+			requester.on('accept_error', function(fd, ep) {console.log('[TinyZMQ] Accept_error');});
+			requester.on('close', function(fd, ep) {console.log('[TinyZMQ] Close');});
+			requester.on('close_error', function(fd, ep) {console.log('[TinyZMQ] Close_error');});
+			requester.on('disconnect', function(fd, ep) {console.log('[TinyZMQ] WARNING: Disconnected');});
+
+			// Handle monitor error
+			requester.on('monitor_error', function(err) {
+				console.log('[TinyZMQ] WARNING: Error in monitoring: %s, will restart monitoring in .5 seconds', err);
+				setTimeout(function() { requester.monitor(500, 0); }, 500);
+			});
+
+			requester.monitor(500, 0);
+		}
+
+		// READY
+		requester.connect(config.MATCHER_CLIENT_URI);
+	}, 50);
 }
 
 function onTerminate(code){
 	console.log("\n[TinyZMQ] The process is terminating", code || '');
+
+	terminating = true;
 	if(requester) {
 		try {
-			requester.disconnect(config.MATCHER_CLIENT_URI);
+			// requester.disconnect(config.MATCHER_CLIENT_URI);
 			requester.close(config.MATCHER_CLIENT_URI);
 		}
 		catch(e){ ; }
 	}
+	process.exit(0);
 }
 
 module.exports = {

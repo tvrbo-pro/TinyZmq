@@ -7,6 +7,7 @@ const procSignals = ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABR
 var brokerURI;
 var responder;
 var initialized = false;
+var terminating = false;
 var notifyWorker;
 var lastActivity = Date.now();
 
@@ -22,7 +23,8 @@ function init(){
 }
 
 function checkHealth() {
-	if(!responder) return lastActivity = Date.now();
+	if(terminating) return;
+	else if(!responder) return lastActivity = Date.now();
 	else if((Date.now() - lastActivity) >= config.INACTIVITY_TIMEOUT) {
 		// Reset clock
 		lastActivity = Date.now();
@@ -61,7 +63,8 @@ function onRequest(requestBuffer) {
 // Lifecycle
 
 function connect(uri, workerCallback){
-	if(!initialized) {
+	if(terminating) return;
+	else if(!initialized) {
 		if(!uri || typeof uri != "string" || !uri.length)
 			throw new Error('[TinyZMQ] ERROR: expected the broker URI to connect the worker to');
 		else if(!workerCallback || typeof workerCallback != 'function') 
@@ -124,6 +127,8 @@ function connect(uri, workerCallback){
 }
 
 function reconnect(){
+	if(terminating) return;
+
 	console.error("[TinyZMQ] Trying to reconnect...");
 	responder.close();
 
@@ -161,13 +166,16 @@ function reconnect(){
 
 function onTerminate(code){
 	console.log("\n[TinyZMQ] The process is terminating", code || '');
+
+	terminating = true;
 	if(responder) {
 		try {
-			responder.disconnect(config.MATCHER_WORKER_URI);
+			// responder.disconnect(config.MATCHER_WORKER_URI);
 			responder.close(config.MATCHER_WORKER_URI);
 		}
 		catch(e){ ; }
 	}
+	process.exit(0);
 }
 
 module.exports = {
