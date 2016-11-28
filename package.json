@@ -1,0 +1,16 @@
+{
+  "name": "tiny-zmq",
+  "version": "1.0.0",
+  "description": "A NodeJS package that provides simple load balanced messaging on distributed environments",
+  "main": "index.js",
+  "keywords": ["zmq", "messaging", "tvrbo", "ventilator", "clustering", "cluster", "load", "balancing", "broker", "worker", "client"],
+  "author": "Jordi Moraleda <jordi@tvrbo.pro>",
+  "license": "ISC",
+  "dependencies": {
+    "uuid": "^3.0.0",
+    "zmq": "^2.15.3"
+  },
+  "devDependencies": {
+    "eslint": "^3.10.2"
+  }
+}
