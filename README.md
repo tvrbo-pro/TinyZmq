@@ -6,7 +6,7 @@ Tiny ZMQ is an NodeJS package that provides simple load balanced messaging on di
 
 Install it from NPM
 
-	npm i -S tiny-paypal
+	npm i -S tiny-zmq
 	
 **Note**: You need to have `libzmq` installed in your computer in order to install the dependencies (zmq). 
 
