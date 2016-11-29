@@ -1,6 +1,6 @@
 const worker = require('.').worker;
 
-worker.connect('tcp://localhost:5560', function(parameters, doneCallback){
+worker.connect(`tcp://${process.env.BROKER_IP || 'localhost'}:5560`, function(parameters, doneCallback){
 	console.log("THE WORKER GOT", parameters);
 	
 	const result = doProcessing(parameters);
