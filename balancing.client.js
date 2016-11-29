@@ -73,7 +73,7 @@ function sendRequest(parameters, callback){
 	matcherCallbacks.push({
 		id: newId,
 		callback: callback,
-		expire: Date.now() + 1000 * 30 // +30 seconds
+		expire: Date.now() + 1000 * 10 // +10 seconds
 	});
 
 	requester.send(JSON.stringify(requestPayload));
