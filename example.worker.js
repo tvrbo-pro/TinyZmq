@@ -4,7 +4,11 @@ worker.connect(`tcp://${process.env.BROKER_IP || 'localhost'}:5560`, function(pa
 	console.log("THE WORKER GOT", parameters);
 	
 	const result = doProcessing(parameters);
-	doneCallback(result);
+	
+	setTimeout(function(){
+		console.log(" > THE WORKER REPLIES WITH", result);
+		doneCallback(result);
+	}, 100);
 });
 
 function doProcessing(parameters){

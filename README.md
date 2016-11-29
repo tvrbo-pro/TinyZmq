@@ -63,19 +63,23 @@ The internal behavior can be tuned by using environment variables at run time.
 
 To get an example of a container running the broker, worker or client on a Linux + NodeJS + ZMQ environment, refer to the ```Dockerfile```.
 
-To build an image, run this command from the project folder:
+To build a test image for each component, run the appropriate command from the project folder:
 
-	docker build -t img_zmq .
+	docker build --build-arg target=broker -t img_broker .
+	docker build --build-arg target=worker -t img_worker .
+	docker build --build-arg target=client -t img_client .
 
-Uncomment the appropriate ```CMD``` directive in ```Dockerfile``` to run the example file (broker, worker or client) that you want:
+Once the images are built, you can run them inside a container:
 
-	CMD nodemon -L -d 1 example.broker.js
-	#CMD nodemon -L -d 1 example.worker.js
-	#CMD nodemon -L -d 1 example.client.js
+	docker run -it --name my_broker img_broker
+	docker run -it --name my_worker img_worker
+	docker run -it --name my_client img_client
 
-To run the image inside a container, type the following once the image is built:
+**Note**: By default, the broker IP is assumed to be ```172.17.0.2```. To change it, add a build argument:
 
-	docker run -it --name tiny_zmq img_zmq /bin/sh
+	docker build --build-arg target=worker --build-arg broker_ip=172.17.0.5 -t img_worker .
+	
+	docker build --build-arg target=client --build-arg broker_ip=172.17.0.5 -t img_client .
 
 ## Related
 
