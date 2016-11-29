@@ -85,6 +85,7 @@ Once the images are built, you can run them inside a container:
 
 * [ZMQ official documentation](http://zguide.zeromq.org/page:all)
 * [ZMQ for NodeJS](https://github.com/JustinTulloss/zeromq.node)
+* [Node-ZMQ Docker image](https://hub.docker.com/r/tvrbo/node-zmq/)
 
 ---
 
