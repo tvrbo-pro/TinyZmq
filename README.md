@@ -63,6 +63,20 @@ The internal behavior can be tuned by using environment variables at run time.
 
 To get an example of a container running the broker, worker or client on a Linux + NodeJS + ZMQ environment, refer to the ```Dockerfile```.
 
+To build an image, run this command from the project folder:
+
+	docker build -t img_zmq .
+
+Uncomment the appropriate ```CMD``` directive in ```Dockerfile``` to run the example file (broker, worker or client) that you want:
+
+	CMD nodemon -L -d 1 example.broker.js
+	#CMD nodemon -L -d 1 example.worker.js
+	#CMD nodemon -L -d 1 example.client.js
+
+To run the image inside a container, type the following once the image is built:
+
+	docker run -it --name tiny_zmq img_zmq /bin/sh
+
 ## Related
 
 * [ZMQ official documentation](http://zguide.zeromq.org/page:all)
