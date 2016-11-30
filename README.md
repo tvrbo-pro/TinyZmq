@@ -1,6 +1,10 @@
 TinyZMQ
 ----
-Tiny ZMQ is an NodeJS package that provides simple load balanced messaging on distributed environments
+Tiny ZMQ is an NodeJS package that provides simple, load balanced and resilient messaging on distributed environments.
+
+It implements the Client - Broker - Worker schema and takes care of reachability. The stock ZMQ implementation for NodeJS may run into issues if some of the workers get offline.
+
+An example Docker container is also provided, for convenience.
 
 ## Installation
 
