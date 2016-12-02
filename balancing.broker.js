@@ -4,7 +4,7 @@ const backend  = zmq.socket('dealer');
 
 function bind(parameters){
 	if(!parameters || !parameters.clientsPort || !parameters.workersPort)
-		throw new Error("ERROR: clientsPort and workersPort are expected in order to init the broker");
+		throw new Error("ERROR: clientsPort and workersPort are expected in order to start the broker");
 
 	console.log(`[TinyZMQ] Binding to ports ${parameters.clientsPort} and ${parameters.workersPort}...`);
 

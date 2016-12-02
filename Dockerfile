@@ -25,4 +25,5 @@ ENV BROKER_IP=${broker_ip}
 # Uncoment below to disable verbose output
 # ENV TINY_ZMQ_DEBUG=
 
-CMD nodemon -L -d 1 example.${TARGET}.js
+CMD nodemon -L -d 1 example-balancing-${TARGET}.js
+#CMD nodemon -L -d 1 example-broadcast-${TARGET}.js

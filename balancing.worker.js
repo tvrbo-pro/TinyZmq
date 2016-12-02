@@ -8,7 +8,7 @@ var brokerURI;
 var responder;
 var initialized = false;
 var terminating = false;
-var notifyWorker;
+var doWorkerJob;
 var lastActivity = Date.now();
 
 function init(){
@@ -39,7 +39,7 @@ function onRequest(requestBuffer) {
 	let requestPayload;
 	lastActivity = Date.now();
 	if(requestBuffer.length == 4 && requestBuffer.toString() == 'ping') return responder.send('pong'); // done
-	else if(!notifyWorker) return console.error('ERROR: No worker callback is registered. Ignoring request.');
+	else if(!doWorkerJob) return console.error('ERROR: No worker callback is registered. Ignoring request.');
 
 	try {
 		requestPayload = JSON.parse(requestBuffer.toString());
@@ -51,7 +51,7 @@ function onRequest(requestBuffer) {
 	}
 
 	// DO WORK
-	notifyWorker(requestPayload.parameters, function(response){
+	doWorkerJob(requestPayload.parameters, function(response){
 		let responsePayload = {
 			id: requestPayload.id,
 			response
@@ -67,16 +67,16 @@ function connect(uri, workerCallback){
 	else if(!initialized) {
 		if(!uri || typeof uri != "string" || !uri.length)
 			throw new Error('[TinyZMQ] ERROR: expected the broker URI to connect the worker to');
-		else if(!workerCallback || typeof workerCallback != 'function') 
+		else if(!workerCallback || typeof workerCallback != 'function')
 			throw new Error('[TinyZMQ] ERROR: expected a callback function to notify the worker');
 
 		brokerURI = uri;
-		notifyWorker = workerCallback;
+		doWorkerJob = workerCallback;
 	}
 	else { // already on
 		if(uri == brokerURI) { // no need to connect
 			if(typeof workerCallback == 'function')
-				notifyWorker = workerCallback;
+				doWorkerJob = workerCallback;
 			else
 				console.log('[TinyZMQ] WARNING: Connection already established to the broker');
 			return;
@@ -90,7 +90,7 @@ function connect(uri, workerCallback){
 		}
 
 		if(typeof workerCallback == 'function')
-			notifyWorker = workerCallback;
+			doWorkerJob = workerCallback;
 	}
 
 	// INITIALIZE

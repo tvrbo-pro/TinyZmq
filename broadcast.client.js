@@ -12,7 +12,6 @@ var brokerURI;
 var initialized = false;
 var terminating = false;
 var lastActivity = Date.now();
-var workerCallbacks = [];
 
 function init() {
 	if(initialized) return;
@@ -20,17 +19,9 @@ function init() {
 
 	// Internal health checks
 	setInterval(checkHealth, 500);
-	setInterval(pingMatchers, PING_INTERVAL);
-	setInterval(cleanExpiredCallbacks, 20000);
 
 	// Termination handlers
 	procSignals.forEach(sig => process.on(sig, onTerminate) );
-}
-
-function pingMatchers(){
-	if(terminating) return;
-	else if(!requester) return;
-	requester.send('ping');
 }
 
 function checkHealth() {
@@ -40,72 +31,24 @@ function checkHealth() {
 		// Reset clock
 		lastActivity = Date.now();
 
-		console.error(`WARNING: No heartbeat from workers for ${config.INACTIVITY_TIMEOUT / 1000} seconds`);
+		console.error(`WARNING: No heartbeat from the broker for ${config.INACTIVITY_TIMEOUT / 1000} seconds`);
 		reconnect();
-	}
-}
-
-function cleanExpiredCallbacks(){
-	for(let i = 0; i < workerCallbacks.length; i++){
-		if(workerCallbacks[i].expire >= Date.now()) continue;
-
-		// Notify timeout to the caller
-		workerCallbacks[i].callback({ result: 'timeout' });
-		workerCallbacks.splice(i, 1);
-		i--;
 	}
 }
 
 // REQUEST
 
-function sendRequest(parameters, callback){
-	if(typeof parameters != 'object')
-		throw new Error("The first parameter must be a payload object");
-	else if(typeof callback != 'function')
-		throw new Error("The second parameter must be a callback function");
-
-	let newId = uuid();
-	const requestPayload = {
-		id: newId,
-		parameters
-	};
-
-	workerCallbacks.push({
-		id: newId,
-		callback: callback,
-		expire: Date.now() + 1000 * 10 // +10 seconds
-	});
+function sendRequest(requestPayload){
+	if(typeof requestPayload != 'object')
+		throw new Error("The parameter must be a payload object");
 
 	requester.send(JSON.stringify(requestPayload));
 }
 
 // RESPONSE
 
-function gotResponse(responseBuffer) {
+function gotResponse() {
 	lastActivity = Date.now();
-	if(!responseBuffer)
-		return console.error('ERROR: Empty responseBuffer from worker');
-	else if(responseBuffer.length == 4 && responseBuffer.toString() == 'pong')
-		return; // done
-
-	try {
-		responseParameters = JSON.parse(responseBuffer);
-		if(!responseParameters.id) {
-			console.error('ERROR: Response from the worker is missing Request ID', responseParameters);
-		}
-
-		for(let i = 0; i < workerCallbacks.length; i++){
-			if(workerCallbacks[i].id != responseParameters.id) continue;
-
-			// notify and clean
-			workerCallbacks[i].callback(responseParameters.response);
-			workerCallbacks.splice(i, 1);
-			break;
-		}
-	}
-	catch(err) {
-		console.error("Matcher response handling Error:", err.message || err);
-	}
 }
 
 // Lifecycle
