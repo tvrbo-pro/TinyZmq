@@ -123,7 +123,7 @@ function connect(uri){
 		if(uri == brokerURI || !uri || typeof uri != 'string' || !uri.length)
 			return console.log('[TinyZMQ] WARNING: Connection already established to the broker');
 		else if(requester) {
-			requester.close();
+			requester.close(brokerURI);
 			console.log('[TinyZMQ] WARNING: Connecting to another broker URI. Closing the previous connection.');
 		}
 
@@ -169,7 +169,8 @@ function reconnect(){
 	if(terminating) return;
 
 	console.error("[TinyZMQ] Trying to reconnect...");
-	requester.close();
+	requester.disconnect(brokerURI);
+	requester.close(brokerURI);
 
 	setTimeout(function(){
 		// CONNECT TO THE BROKER
@@ -209,7 +210,7 @@ function onTerminate(code){
 	terminating = true;
 	if(requester) {
 		try {
-			// requester.disconnect(brokerURI);
+			requester.disconnect(brokerURI);
 			requester.close(brokerURI);
 		}
 		catch(e){ ; }

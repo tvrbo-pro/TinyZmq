@@ -81,7 +81,7 @@ function connect(uri, subscriberCallback){
 			throw new Error('[TinyZMQ] ERROR: expected the broker URI to connect the worker to');
 		else if(subscriber) {
 			console.log('[TinyZMQ] WARNING: Connecting to another broker URI. Closing the previous connection.');
-			subscriber.close();
+			subscriber.close(brokerURI);
 			brokerURI = uri;
 		}
 
@@ -127,7 +127,8 @@ function reconnect(){
 	if(terminating) return;
 
 	console.error("[TinyZMQ] Trying to reconnect...");
-	subscriber.close();
+	subscriber.disconnect(brokerURI);
+	subscriber.close(brokerURI);
 
 	setTimeout(function(){
 		// CONNECT TO THE BROKER
@@ -168,8 +169,8 @@ function onTerminate(code){
 	terminating = true;
 	if(subscriber) {
 		try {
-			// subscriber.disconnect(config.MATCHER_WORKER_URI);
-			subscriber.close(config.MATCHER_WORKER_URI);
+			subscriber.disconnect(brokerURI);
+			subscriber.close(brokerURI);
 		}
 		catch(e){ ; }
 	}

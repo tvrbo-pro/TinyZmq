@@ -1,6 +1,6 @@
 {
   "name": "tiny-zmq",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A NodeJS package that provides simple load balanced and broadcast messaging on distributed environments",
   "main": "index.js",
   "keywords": [ "zmq", "messaging", "tvrbo", "ventilator", "clustering", "cluster", "load", "balancing", "balancer", "broadcast", "socket", "broker", "worker", "client" ],
