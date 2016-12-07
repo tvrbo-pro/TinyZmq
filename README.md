@@ -122,9 +122,9 @@ To build a test image for each component, run the appropriate command from the p
 
 Once the images are built, you can run them inside a container:
 
-	docker run -it --name my_broker img_broker
-	docker run -it --name my_worker img_worker
-	docker run -it --name my_client img_client
+	docker run --rm -it --name my_broker img_broker
+	docker run --rm -it --name my_worker img_worker
+	docker run --rm -it --name my_client img_client
 
 **Note**: By default, the broker IP is assumed to be ```172.17.0.2```. To change it, add a build argument:
 
